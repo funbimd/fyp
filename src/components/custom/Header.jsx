@@ -89,7 +89,7 @@ const Header = () => {
           <Button onClick={() => setopenDialog(true)}>Sign in</Button>
         )}
       </div>
-      <Dialog open={openDialog}>
+      <Dialog open={openDialog} onOpenChange={setopenDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogDescription>
