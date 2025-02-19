@@ -50,7 +50,13 @@ const Header = () => {
   };
   return (
     <div className="p-3 shadow-sm flex justify-between items-center px-5">
-      <img src="/logo.svg" alt="Logo" className="h-20 w-auto object-contain" />
+      <a href="/">
+        <img
+          src="/logo.svg"
+          alt="Logo"
+          className="h-20 w-auto object-contain"
+        />
+      </a>
       <div>
         {user ? (
           <div className="flex items-center gap-5">
