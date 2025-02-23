@@ -9,6 +9,8 @@ const PlacesToVisit = ({ trip }) => {
       <h2 className="font-bold text-lg">Places to Visit</h2>
       {itinerary ? (
         Object.keys(itinerary)
+          // Filter out any non-day keys
+          .filter((key) => key.toLowerCase().includes("day"))
           .sort((a, b) => {
             const dayA = parseInt(a.replace("day", ""), 10);
             const dayB = parseInt(b.replace("day", ""), 10);

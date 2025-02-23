@@ -20,9 +20,11 @@ import {
 
 import { FcGoogle } from "react-icons/fc";
 import { useGoogleLogin } from "@react-oauth/google";
-import { doc, setDoc } from "firebase/firestore";
-import { db } from "@/service/firebaseConfig";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { db, auth } from "@/service/firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { CiMail } from "react-icons/ci";
 
 const CreateTrip = () => {
   const [place, setPlace] = useState();
@@ -32,6 +34,8 @@ const CreateTrip = () => {
   const [openDialog, setopenDialog] = useState(false);
 
   const [loading, setLoading] = useState(false);
+
+  const [firebaseUser, setFirebaseUser] = useState();
 
   const navigate = useNavigate();
 
@@ -43,8 +47,12 @@ const CreateTrip = () => {
   };
 
   useEffect(() => {
-    console.log(formData);
-  }, [formData]);
+    // Track Firebase Auth user
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setFirebaseUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const login = useGoogleLogin({
     onSuccess: (codeResp) => GetUserProfile(codeResp),
@@ -52,9 +60,9 @@ const CreateTrip = () => {
   });
 
   const OnGenerateTrip = async () => {
-    const user = localStorage.getItem("user");
+    const googleUser = localStorage.getItem("user");
 
-    if (!user) {
+    if (!googleUser && !firebaseUser) {
       setopenDialog(true);
       return;
     }
@@ -86,17 +94,49 @@ const CreateTrip = () => {
 
   const SaveAiTrip = async (TripData) => {
     setLoading(true);
-    const user = JSON.parse(localStorage.getItem("user"));
+    let userEmail = null;
     const docId = Date.now().toString();
-    // Add a new document in collection "cities"
-    await setDoc(doc(db, "AITrips", docId), {
-      userSelection: formData,
-      tripData: JSON.parse(TripData),
-      userEmail: user?.email,
-      id: docId,
-    });
-    setLoading(false);
-    navigate("/view-trip/" + docId);
+
+    // 1️⃣ Check if the user is signed in with Google (from localStorage)
+    const googleUser = JSON.parse(localStorage.getItem("user"));
+    if (googleUser?.email) {
+      userEmail = googleUser.email;
+    }
+
+    // 2️⃣ If not Google, check Firestore for email/password authenticated users
+    if (!userEmail && auth.currentUser) {
+      try {
+        const userDoc = await getDoc(doc(db, "Users", auth.currentUser.uid));
+        if (userDoc.exists()) {
+          userEmail = userDoc.data().email;
+        }
+      } catch (error) {
+        console.error("Error fetching user from Firestore:", error);
+      }
+    }
+
+    // 3️⃣ If no userEmail is found, prevent saving
+    if (!userEmail) {
+      toast.error("User email not found. Please sign in again.");
+      setLoading(false);
+      return;
+    }
+
+    // 4️⃣ Save trip data to Firestore
+    try {
+      await setDoc(doc(db, "AITrips", docId), {
+        userSelection: formData,
+        tripData: JSON.parse(TripData),
+        userEmail,
+        id: docId,
+      });
+      navigate("/view-trip/" + docId);
+    } catch (error) {
+      console.error("Error saving trip:", error);
+      toast.error("Failed to save trip. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const GetUserProfile = (tokenInfo) => {
@@ -216,6 +256,12 @@ const CreateTrip = () => {
                 <FcGoogle className="h-7 w-7" />
                 Sign In With Google
               </Button>
+              <a href="/login">
+                <Button className="w-full mt-5 flex gap-4 items-center">
+                  <CiMail />
+                  Sign in with your email
+                </Button>
+              </a>
             </DialogDescription>
           </DialogHeader>
         </DialogContent>

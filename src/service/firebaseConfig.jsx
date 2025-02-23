@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import {getFirestore} from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -14,10 +14,10 @@ const firebaseConfig = {
   storageBucket: "travela-9367b.appspot.com",
   messagingSenderId: "822933517490",
   appId: "1:822933517490:web:e3285e631e8ad4508d45ab",
-  measurementId: "G-3S52VKQV84"
+  measurementId: "G-3S52VKQV84",
 };
 
 // Initialize Firebase
- export const app = initializeApp(firebaseConfig);
- export const db=getFirestore(app);
-// const analytics = getAnalytics(app);
+export const app = initializeApp(firebaseConfig);
+export const auth = getAuth();
+export const db = getFirestore(app);
