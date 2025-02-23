@@ -94,42 +94,19 @@ const CreateTrip = () => {
 
   const SaveAiTrip = async (TripData) => {
     setLoading(true);
-    let userEmail = null;
     const docId = Date.now().toString();
 
-    // 1️⃣ Check if the user is signed in with Google (from localStorage)
+    // ✅ 1. Get Google User from LocalStorage
     const googleUser = JSON.parse(localStorage.getItem("user"));
-    if (googleUser?.email) {
-      userEmail = googleUser.email;
-    }
-
-    // 2️⃣ If not Google, check Firestore for email/password authenticated users
-    if (!userEmail) {
-      const savedFirebaseUser = JSON.parse(
-        localStorage.getItem("firebaseUser")
-      );
-      if (savedFirebaseUser?.email) {
-        userEmail = savedFirebaseUser.email;
-      } else if (auth.currentUser) {
-        try {
-          const userDoc = await getDoc(doc(db, "Users", auth.currentUser.uid));
-          if (userDoc.exists()) {
-            userEmail = userDoc.data().email;
-          }
-        } catch (error) {
-          console.error("Error fetching user from Firestore:", error);
-        }
-      }
-    }
-
-    // 3️⃣ If no userEmail is found, prevent saving
-    if (!userEmail) {
-      toast.error("User email not found. Please sign in again.");
+    if (!googleUser?.email) {
+      toast.error("Google user not found. Please sign in again.");
       setLoading(false);
       return;
     }
 
-    // 4️⃣ Save trip data to Firestore
+    const userEmail = googleUser.email;
+
+    // ✅ 2. Save trip data to Firestore
     try {
       await setDoc(doc(db, "AITrips", docId), {
         userSelection: formData,
