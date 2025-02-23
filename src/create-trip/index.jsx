@@ -49,13 +49,7 @@ const CreateTrip = () => {
   useEffect(() => {
     // Track Firebase Auth user
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setFirebaseUser(user);
-        localStorage.setItem("firebaseUser", JSON.stringify(user)); // ✅ Save for later use
-      } else {
-        setFirebaseUser(null);
-        localStorage.removeItem("firebaseUser");
-      }
+      setFirebaseUser(user);
     });
     return () => unsubscribe();
   }, []);
