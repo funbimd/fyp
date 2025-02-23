@@ -49,7 +49,13 @@ const CreateTrip = () => {
   useEffect(() => {
     // Track Firebase Auth user
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setFirebaseUser(user);
+      if (user) {
+        setFirebaseUser(user);
+        localStorage.setItem("firebaseUser", JSON.stringify(user)); // ✅ Save for later use
+      } else {
+        setFirebaseUser(null);
+        localStorage.removeItem("firebaseUser");
+      }
     });
     return () => unsubscribe();
   }, []);
@@ -104,14 +110,21 @@ const CreateTrip = () => {
     }
 
     // 2️⃣ If not Google, check Firestore for email/password authenticated users
-    if (!userEmail && auth.currentUser) {
-      try {
-        const userDoc = await getDoc(doc(db, "Users", auth.currentUser.uid));
-        if (userDoc.exists()) {
-          userEmail = userDoc.data().email;
+    if (!userEmail) {
+      const savedFirebaseUser = JSON.parse(
+        localStorage.getItem("firebaseUser")
+      );
+      if (savedFirebaseUser?.email) {
+        userEmail = savedFirebaseUser.email;
+      } else if (auth.currentUser) {
+        try {
+          const userDoc = await getDoc(doc(db, "Users", auth.currentUser.uid));
+          if (userDoc.exists()) {
+            userEmail = userDoc.data().email;
+          }
+        } catch (error) {
+          console.error("Error fetching user from Firestore:", error);
         }
-      } catch (error) {
-        console.error("Error fetching user from Firestore:", error);
       }
     }
 
