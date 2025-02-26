@@ -22,7 +22,7 @@ import { FcGoogle } from "react-icons/fc";
 import { useGoogleLogin } from "@react-oauth/google";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/service/firebaseConfig";
-import { onAuthStateChanged } from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { CiMail } from "react-icons/ci";
 
@@ -49,7 +49,13 @@ const CreateTrip = () => {
   useEffect(() => {
     // Track Firebase Auth user
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setFirebaseUser(user);
+      if (user) {
+        setFirebaseUser(user);
+        console.log("User loggged in", user.uid);
+      } else {
+        setFirebaseUser(null);
+        console.log("No user");
+      }
     });
     return () => unsubscribe();
   }, []);
@@ -89,31 +95,35 @@ const CreateTrip = () => {
 
     console.log("--", result?.response?.text());
     setLoading(false);
-    SaveAiTrip(result?.response?.text());
+    SaveAiTrip(result?.response?.text(), formData, setLoading, db);
   };
 
-  const SaveAiTrip = async (TripData) => {
+  const SaveAiTrip = async (TripData, formData, setLoading, db) => {
     setLoading(true);
-    const docId = Date.now().toString();
+    const auth = getAuth();
+    const user = auth.currentUser; // ✅ Get authenticated user
 
-    // ✅ 1. Get Google User from LocalStorage
-    const googleUser = JSON.parse(localStorage.getItem("user"));
-    if (!googleUser?.email) {
-      toast.error("Google user not found. Please sign in again.");
+    if (!user) {
+      toast.error("User not found. Please sign in again.");
       setLoading(false);
       return;
     }
 
-    const userEmail = googleUser.email;
+    const userId = user.uid; // ✅ Get UID for both Google and Email users
+    const userEmail = user.email;
+    const docId = Date.now().toString();
 
-    // ✅ 2. Save trip data to Firestore
     try {
       await setDoc(doc(db, "AITrips", docId), {
+        userId, // ✅ Save UID for better retrieval
+        userEmail, // ✅ Store email
         userSelection: formData,
         tripData: JSON.parse(TripData),
-        userEmail,
         id: docId,
+        createdAt: new Date(), // Optional: Track when the trip was saved
       });
+
+      toast.success("Trip saved successfully!");
       navigate("/view-trip/" + docId);
     } catch (error) {
       console.error("Error saving trip:", error);
