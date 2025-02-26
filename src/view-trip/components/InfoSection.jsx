@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import React, { useState, useRef, useEffect } from "react";
 import { AiOutlineSend } from "react-icons/ai";
 import { FaWhatsapp, FaFacebook, FaSnapchat, FaCopy } from "react-icons/fa";
+import { toast } from "sonner";
 
 const InfoSection = ({ trip }) => {
   const [showShare, setShowShare] = useState(false);
@@ -11,7 +12,15 @@ const InfoSection = ({ trip }) => {
   // Copy to clipboard function
   const copyToClipboard = () => {
     navigator.clipboard.writeText(shareableLink);
-    alert("Link copied to clipboard! 📋");
+    toast.success("Link copied to clipboard!", {
+      position: "top-right",
+      autoClose: 3000, // Closes after 3 seconds
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "light",
+    });
   };
 
   // Close the share menu when clicking outside
