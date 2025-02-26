@@ -52,7 +52,9 @@ export const SelectBudgetOptions = [
 
 export const AI_PROMPT = `
 Generate a Travel Plan for Location: {location}, for {totalDays} days for {traveler} with a {budget} budget. 
-Give me Hotel options list with Hotel Name, Hotel Address, Pricing, Hotel image url from public image sources (Unsplash, Pexels, or Pixabay), geo coordinates, rating, descriptions. 
-Also, suggest an itinerary with place name, place details, place image url from public image sources (Unsplash, Pexels, or Pixabay), ticket pricing, rating, time travel for each of the locations for {totalDays} days with each day plan, and include the best time to visit, all in JSON format.
-Ensure that the image URLs are publicly accessible and appropriate for use in a travel website or app.
+Give me a list of hotel options with Hotel Name, Hotel Address, Pricing, Hotel image URL (only from Pexels), geo coordinates, rating, and descriptions. 
+Also, suggest an itinerary with place name, place details, place image URL (only from Pexels), ticket pricing, rating, and travel time for each location over {totalDays} days, with a detailed daily plan.  
+Include the best time to visit.  
+
+Ensure that all image URLs are **only from Pexels** and are publicly accessible for use in a travel website or app. Do not include images from any other sources.
 `;
