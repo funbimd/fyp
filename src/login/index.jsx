@@ -11,7 +11,6 @@ const Login = () => {
     e.preventDefault(); // Prevent form from submitting and refreshing the page
     // Handle login logic here (e.g., API call, validation)
     console.log("Email:", email);
-    console.log("Password:", password);
 
     // Example validation (you'll likely want more robust validation)
     if (!email || !password) {
